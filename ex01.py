@@ -17,13 +17,16 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 
 
-driver = webdriver.Chrome("./chromedriver", chrome_options=chrome_options)
+driver = webdriver.Chrome()
 driver.get("https://www.imdb.com/title/tt1877830/reviews?ref_=tt_urv")
 sel = Selector(text=driver.page_source)
 review_counts = sel.css('.lister .header span::text').extract_first().replace(
     ',', '').split(' ')[0]
 
-more_review_pages = int(int(float(review_counts))/25)
+review_counts = review_counts.replace('.', '')
+print(review_counts)
+
+more_review_pages = int(float(review_counts)/25)
 print(more_review_pages)
 for i in tqdm(range(more_review_pages)):
     try:
@@ -58,3 +61,6 @@ for review in reviews:
 
     except Exception:
         pass
+
+# print(current_review)
+
