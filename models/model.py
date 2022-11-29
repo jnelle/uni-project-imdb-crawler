@@ -7,3 +7,8 @@ class Review(BaseModel):
     review: str
     url: str
     date: str
+    helpfulness: str
+    author: str
+    id: str
+    name: str
+    year: int

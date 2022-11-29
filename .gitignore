@@ -1,2 +1,4 @@
 chromedriver
 abc
+__pycache__
+.env
