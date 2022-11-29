@@ -37,8 +37,8 @@ async def get_reviews(service: MongoService = Provide[Container.service]) -> Non
     movie_year = sel.css(
         '.article .subpage_title_block .subpage_title_block__right-column span::text').extract_first().strip().replace('(', '').replace(')', '')
 
-    more_review_pages = int(int(review_counts)/25)
-    for i in tqdm(range(more_review_pages)):
+    more_review_pages = int(float(review_counts)/25)
+    for _ in tqdm(range(more_review_pages)):
         try:
             driver.find_element(By.ID, 'load-more-trigger').click()
             driver.implicitly_wait(4)
