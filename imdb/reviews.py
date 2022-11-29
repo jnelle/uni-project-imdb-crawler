@@ -1,14 +1,15 @@
-from tqdm import tqdm
-from scrapy.selector import Selector
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-from dependency_injector.wiring import Provide, inject
-from db.mongo import MongoService
-from models.model import Review
-
-import warnings
 from provider.db_provider import Container
+import warnings
+from models.model import Review
+from db.mongo import MongoService
+from dependency_injector.wiring import Provide, inject
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from scrapy.selector import Selector
+from tqdm import tqdm
+import platform
+
 
 warnings.filterwarnings("ignore")
 chrome_options = Options()
@@ -19,8 +20,12 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 
 @inject
 async def get_reviews(service: MongoService = Provide[Container.service]) -> None:
+    if platform.system() == 'Linux':
+        driver = webdriver.Chrome(
+            "./chromedriver", chrome_options=chrome_options)
+    else:
+        driver = webdriver.Chrome()
 
-    driver = webdriver.Chrome("./chromedriver", chrome_options=chrome_options)
     driver.get("https://www.imdb.com/title/tt1877830/reviews?ref_=tt_urv")
     sel = Selector(text=driver.page_source)
     review_counts = sel.css('.lister .header span::text').extract_first().replace(
@@ -32,8 +37,8 @@ async def get_reviews(service: MongoService = Provide[Container.service]) -> Non
     movie_year = sel.css(
         '.article .subpage_title_block .subpage_title_block__right-column span::text').extract_first().strip().replace('(', '').replace(')', '')
 
-    more_review_pages = int(int(review_counts)/25)
-    for i in tqdm(range(more_review_pages)):
+    more_review_pages = int(float(review_counts)/25)
+    for _ in tqdm(range(more_review_pages)):
         try:
             driver.find_element(By.ID, 'load-more-trigger').click()
             driver.implicitly_wait(4)
