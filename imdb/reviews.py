@@ -1,15 +1,15 @@
-import platform
-from tqdm import tqdm
-from scrapy.selector import Selector
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-from dependency_injector.wiring import Provide, inject
-from db.mongo import MongoService
-from models.model import Review
-
-import warnings
 from provider.db_provider import Container
+import warnings
+from models.model import Review
+from db.mongo import MongoService
+from dependency_injector.wiring import Provide, inject
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from scrapy.selector import Selector
+from tqdm import tqdm
+import platform
+
 
 warnings.filterwarnings("ignore")
 chrome_options = Options()
