@@ -22,7 +22,9 @@ driver.get("https://www.imdb.com/title/tt1877830/reviews?ref_=tt_urv")
 sel = Selector(text=driver.page_source)
 review_counts = sel.css('.lister .header span::text').extract_first().replace(
     ',', '').split(' ')[0]
-more_review_pages = int(int(review_counts)/25)
+
+more_review_pages = int(int(float(review_counts))/25)
+print(more_review_pages)
 for i in tqdm(range(more_review_pages)):
     try:
         css_selector = 'load-more-trigger'
