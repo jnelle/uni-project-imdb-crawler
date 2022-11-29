@@ -1,3 +1,4 @@
+import platform
 from tqdm import tqdm
 from scrapy.selector import Selector
 from selenium.webdriver.common.by import By
@@ -19,8 +20,12 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 
 @inject
 async def get_reviews(service: MongoService = Provide[Container.service]) -> None:
+    if platform.system() == 'Linux':
+        driver = webdriver.Chrome(
+            "./chromedriver", chrome_options=chrome_options)
+    else:
+        driver = webdriver.Chrome()
 
-    driver = webdriver.Chrome("./chromedriver", chrome_options=chrome_options)
     driver.get("https://www.imdb.com/title/tt1877830/reviews?ref_=tt_urv")
     sel = Selector(text=driver.page_source)
     review_counts = sel.css('.lister .header span::text').extract_first().replace(
