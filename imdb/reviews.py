@@ -1,3 +1,5 @@
+import logging
+import time
 from provider.db_provider import Container
 import warnings
 from models.model import Review
@@ -16,17 +18,34 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-extensions")
+
+
+async def get_top_movies() -> None:
+    driver = webdriver.Chrome(
+        "./chromedriver", chrome_options=chrome_options)
+
+    driver.get("https://www.imdb.com/chart/top/?ref_=nv_mv_250")
+    sel = Selector(text=driver.page_source)
+    hrefs = sel.css('.titleColumn a::attr(href)').extract()
+    titles = sel.css('.titleColumn a::text').extract()
+    counter = 0
+    for x in hrefs:
+        logging.info("Currently at movie: " + titles[counter])
+        splitted_url = x.split("?")[0]
+        await get_reviews(splitted_url)
+        counter += 1
 
 
 @inject
-async def get_reviews(service: MongoService = Provide[Container.service]) -> None:
+async def get_reviews(url: str, service: MongoService = Provide[Container.service]) -> None:
     if platform.system() == 'Linux':
         driver = webdriver.Chrome(
             "./chromedriver", chrome_options=chrome_options)
     else:
         driver = webdriver.Chrome()
 
-    driver.get("https://www.imdb.com/title/tt1877830/reviews?ref_=tt_urv")
+    driver.get("https://www.imdb.com"+url+"reviews?ref_=tt_urv")
     sel = Selector(text=driver.page_source)
     review_counts = sel.css('.lister .header span::text').extract_first().replace(
         ',', '').split(' ')[0]
@@ -41,7 +60,7 @@ async def get_reviews(service: MongoService = Provide[Container.service]) -> Non
     for _ in tqdm(range(more_review_pages)):
         try:
             driver.find_element(By.ID, 'load-more-trigger').click()
-            driver.implicitly_wait(4)
+            driver.implicitly_wait(5)
         except Exception as e:
             print(e)
             pass
@@ -72,4 +91,4 @@ async def get_reviews(service: MongoService = Provide[Container.service]) -> Non
                                                 movie_year),
                                             name=movie_name))
         except Exception as e:
-            print(e)
+            pass
